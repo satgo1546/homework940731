@@ -33,9 +33,39 @@ db.run(`
 
 // 首页
 app.get('/', (req, res) => {
-  let page = parseInt(req.query.page)
-  if (!(page >= 0 && Number.isFinite(page))) page = 0
+  db.all(`SELECT * FROM images ORDER BY order_num ASC`, (err, rows) => {
+    if (err) {
+      console.error(err.message)
+      return res.status(500).send('错误！')
+    }
+
+    res.send(`<!DOCTYPE html>
+      <meta charset="utf-8">
+      <title>画廊</title>
+      <form method="post" action="/upload" enctype="multipart/form-data">
+        <input type="file" name="image" required>
+        <button type="submit">上传</button>
+      </form>
+      ${rows.map(image => `
+        <form method="get" action="/reorder">
+          <img src="${image.filename}" width="100" height="100">
+          <input type="hidden" name="id" value="${image.id}">
+          <input name="order_num" value="${image.order_num}" autocomplete="off">
+          <button type="submit">设置次序</button>
+          <a href="/delete?id=${image.id}">删除</a>
+        </form>
+      `).join('')}
+    `)
+  })
+})
+
+// 列表接口
+app.get('/list', (req, res) => {
   const LIMIT = 10
+  let page = parseInt(req.query.page)
+  if (!(page >= 0 && Number.isFinite(page))) {
+    return res.status(400).send('参数错误！')
+  }
 
   db.all(`SELECT * FROM images ORDER BY order_num ASC LIMIT ?, ?`, [page * LIMIT, LIMIT], (err, rows) => {
     if (err) {
@@ -49,27 +79,10 @@ app.get('/', (req, res) => {
         return res.status(500).send('错误！')
       }
 
-      const totalPages = Math.ceil(total / LIMIT)
-      res.send(`<!DOCTYPE html>
-        <meta charset="utf-8">
-        <title>画廊</title>
-        <form method="post" action="/upload" enctype="multipart/form-data">
-          <input type="file" name="image" required>
-          <button type="submit">上传</button>
-        </form>
-        ${rows.map(image => `
-            <form method="get" action="/reorder">
-              <img src="${image.filename}" width="100" height="100">
-              <input type="hidden" name="id" value="${image.id}">
-              <input name="order_num" value="${image.order_num}" autocomplete="off">
-              <button type="submit">设置次序</button>
-              <a href="/delete?id=${image.id}">删除</a>
-            </form>
-          `).join('')}
-        ${Array(totalPages).fill()
-          .map((_, i) => i === page ? `<span>${i}</span>` : `<a href="?page=${i}">${i}</a>`)
-          .join(' ')}
-      `)
+      res.contentType('application/json').send(JSON.stringify({
+        rows,
+        totalPages: Math.ceil(total / LIMIT),
+      }))
     })
   })
 })
