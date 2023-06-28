@@ -2,10 +2,18 @@
   <div>
     <el-table-draggable @sort="handleRowDragEnd">
       <el-table :data="state.rows" border row-key="id">
-        <el-table-column label="ID" prop="id"></el-table-column>
-        <el-table-column label="文件名" prop="filename"></el-table-column>
+        <el-table-column label="ID" prop="id" width="40"></el-table-column>
+        <el-table-column label="图片" width="120">
+          <template v-slot="{ row }">
+            <img :src="'http://localhost:40731/' + row.filename" width="100" height="100">
+          </template>
+        </el-table-column>
         <el-table-column label="排序顺序" prop="order_num"></el-table-column>
-        <el-table-column label="审核通过" prop="visible"></el-table-column>
+        <el-table-column label="操作" width="144">
+          <template v-slot="{ row }">
+            <el-checkbox v-model="row.visible" @change="updateRecord({ id: row.id, visible: row.visible })" label="审核通过" border></el-checkbox>
+          </template>
+        </el-table-column>
       </el-table>
     </el-table-draggable>
     <el-pagination layout="prev, pager, next" :total="state.total" :page-size="state.count" :current-page="state.page"
@@ -52,12 +60,14 @@ function handleRowDragEnd(event) {
   const jOrder = j < 0 ? state.prevLastOrderNum : j >= state.count ? state.nextFirstOrderNum : state.rows[j].order_num
   const newOrder = (state.rows[i].order_num + jOrder) / 2
   state.rows[event.oldIndex].order_num = newOrder
-  axios.get('http://localhost:40731/update', {
-    params: {
-      id: state.rows[event.oldIndex].id,
-      order_num: newOrder,
-    },
+  updateRecord({
+    id: state.rows[event.oldIndex].id,
+    order_num: newOrder,
   })
+}
+
+async function updateRecord(params) {
+  await axios.get('http://localhost:40731/update', { params });
 }
 
 onMounted(fetchData)
