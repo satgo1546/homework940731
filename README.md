@@ -20,7 +20,7 @@ npm run dev
 
 - `GET /list?page=0`
 - `POST /upload` 接收单一参数image，为图片文件
-- `GET /reorder?id=1&order_num=6.28`
+- `GET /update?id=1&order_num=6.28&visible=false`
 - `GET /delete?id=1`
 - `GET /00000000-0000-0000-0000-000000000000.jpg`
 

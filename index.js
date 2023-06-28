@@ -27,7 +27,8 @@ db.run(`
   CREATE TABLE IF NOT EXISTS images (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     filename TEXT,
-    order_num REAL
+    order_num REAL,
+    visible BOOL
   );
 `)
 
@@ -46,15 +47,28 @@ app.get('/', (req, res) => {
         <input type="file" name="image" required>
         <button type="submit">上传</button>
       </form>
+      <table border="2">
       ${rows.map(image => `
-        <form method="get" action="/reorder">
-          <img src="${image.filename}" width="100" height="100">
-          <input type="hidden" name="id" value="${image.id}">
-          <input name="order_num" value="${image.order_num}" autocomplete="off">
-          <button type="submit">设置次序</button>
-          <a href="/delete?id=${image.id}">删除</a>
-        </form>
+        <tr>
+          <td>
+            <img src="${image.filename}" width="100" height="100">
+          </td>
+          <td>
+            <form method="get" action="/update">
+              <input type="hidden" name="id" value="${image.id}">
+              <input type="radio" name="visible" value="true" ${image.visible ? 'checked' : ''}>
+              可见
+              <input type="radio" name="visible" value="false" ${image.visible ? '' : 'checked'}>
+              不可见
+              次序 =
+              <input name="order_num" value="${image.order_num}" autocomplete="off">
+              <button type="submit">设置</button>
+              <a href="/delete?id=${image.id}">删除</a>
+            </form>
+          </td>
+        </tr>
       `).join('')}
+      </table>
     `)
   })
 })
@@ -90,7 +104,10 @@ app.get('/list', (req, res) => {
 // 上传接口
 app.post('/upload', upload.single('image'), (req, res) => {
   const { filename } = req.file
-  db.run(`INSERT INTO images (filename, order_num) VALUES (?, (SELECT COALESCE(MAX(order_num), 0) + 1 FROM images))`, [filename], (err) => {
+  db.run(`
+    INSERT INTO images (filename, visible, order_num)
+    VALUES (?, FALSE, (SELECT COALESCE(MAX(order_num), 0) + 1 FROM images))
+  `, [filename], (err) => {
     if (err) {
       console.error(err.message)
       return res.status(500).send('错误！')
@@ -99,11 +116,18 @@ app.post('/upload', upload.single('image'), (req, res) => {
   })
 })
 
-// 重排接口
-app.get('/reorder', (req, res) => {
+// 更新接口
+app.get('/update', (req, res) => {
   const id = +req.query.id
-  const order_num = +req.query.order_num
-  db.run(`UPDATE images SET order_num = ? WHERE id = ?`, [order_num, id], (err) => {
+  let order_num = +req.query.order_num
+  if (!Number.isFinite(order_num)) order_num = null
+  const visible = req.query.hasOwnProperty('visible') ? !/^0*$|^f/i.test(req.query.visible) : null
+  db.run(`
+    UPDATE images SET
+    order_num = COALESCE(?, order_num),
+    visible = COALESCE(?, visible)
+    WHERE id = ?
+  `, [order_num, visible, id], (err) => {
     if (err) {
       console.error(err.message)
       return res.status(500).send('错误！')
