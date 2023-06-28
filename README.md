@@ -18,7 +18,7 @@ npm run dev
 
 提供下列接口。
 
-- `GET /list?page=0`
+- `GET /list?start=0&count=0` 返回`{"rows": [], "total": 0}`
 - `POST /upload` 接收单一参数image，为图片文件
 - `GET /update?id=1&order_num=6.28&visible=false`
 - `GET /delete?id=1`

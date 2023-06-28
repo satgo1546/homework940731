@@ -4,8 +4,10 @@ const multer = require('multer')
 const path = require('path')
 const fs = require('fs')
 const uuid = require('uuid')
+const cors = require('cors')
 
 const app = express()
+app.use(cors())
 const db = new sqlite3.Database('gallery.db')
 
 // 不存在uploads文件夹时创建
@@ -46,6 +48,7 @@ app.get('/', (req, res) => {
       <form method="post" action="/upload" enctype="multipart/form-data">
         <input type="file" name="image" required>
         <button type="submit">上传</button>
+        <a href="/list?start=0&count=10">前10条记录</a>
       </form>
       <table border="2">
       ${rows.map(image => `
@@ -75,13 +78,12 @@ app.get('/', (req, res) => {
 
 // 列表接口
 app.get('/list', (req, res) => {
-  const LIMIT = 10
-  let page = parseInt(req.query.page)
-  if (!(page >= 0 && Number.isFinite(page))) {
-    return res.status(400).send('参数错误！')
-  }
+  let start = parseInt(req.query.start)
+  if (!(start >= 0 && Number.isFinite(start))) start = 0
+  let count = parseInt(req.query.count)
+  if (!(count >= 0 && Number.isFinite(count))) count = 1
 
-  db.all(`SELECT * FROM images ORDER BY order_num ASC LIMIT ?, ?`, [page * LIMIT, LIMIT], (err, rows) => {
+  db.all(`SELECT * FROM images ORDER BY order_num ASC LIMIT ?, ?`, [start, count], (err, rows) => {
     if (err) {
       console.error(err.message)
       return res.status(500).send('错误！')
@@ -93,10 +95,7 @@ app.get('/list', (req, res) => {
         return res.status(500).send('错误！')
       }
 
-      res.contentType('application/json').send(JSON.stringify({
-        rows,
-        totalPages: Math.ceil(total / LIMIT),
-      }))
+      res.contentType('application/json').send(JSON.stringify({rows,total}))
     })
   })
 })
