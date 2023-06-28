@@ -82,20 +82,18 @@ app.get('/list', (req, res) => {
   if (!(start >= 0 && Number.isFinite(start))) start = 0
   let count = parseInt(req.query.count)
   if (!(count >= 0 && Number.isFinite(count))) count = 1
-
   db.all(`SELECT * FROM images ORDER BY order_num ASC LIMIT ?, ?`, [start, count], (err, rows) => {
     if (err) {
       console.error(err.message)
       return res.status(500).send('错误！')
     }
-
     db.get(`SELECT COUNT(*) AS total FROM images`, (err, { total }) => {
       if (err) {
         console.error(err.message)
         return res.status(500).send('错误！')
       }
-
-      res.contentType('application/json').send(JSON.stringify({rows,total}))
+      rows.forEach(row => row.visible = !!row.visible)
+      res.contentType('application/json').send(JSON.stringify({ rows, total }))
     })
   })
 })
@@ -111,7 +109,7 @@ app.post('/upload', upload.single('image'), (req, res) => {
       console.error(err.message)
       return res.status(500).send('错误！')
     }
-    res.redirect('/')
+    res.status(204).end()
   })
 })
 
@@ -131,7 +129,7 @@ app.get('/update', (req, res) => {
       console.error(err.message)
       return res.status(500).send('错误！')
     }
-    res.redirect('/')
+    res.status(204).end()
   })
 })
 
@@ -144,7 +142,7 @@ app.get('/delete', (req, res) => {
       return res.status(500).send('错误！')
     }
     fs.unlink(path.join('uploads', filename), () => { })
-    res.redirect('/')
+    res.status(204).end()
   })
 })
 
