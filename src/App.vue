@@ -16,6 +16,11 @@
 body {
   max-width: 800px;
   margin: auto;
+  background: -2px -2px / 100px 100px linear-gradient(#899 2px, transparent 2px),
+    -2px -2px / 100px 100px linear-gradient(90deg, #899 2px, transparent 2px),
+    -1px -1px / 20px 20px linear-gradient(#899 1px, transparent 1px),
+    -1px -1px / 20px 20px linear-gradient(90deg, #899 1px, #788 1px);
+  color: white;
 }
 
 nav {

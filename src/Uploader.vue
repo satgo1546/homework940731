@@ -2,7 +2,7 @@
   <div>
     <h1>上传图片</h1>
     <input v-show="!uploading" type="file" @change="handleFileInput" multiple accept="image/gif, image/jpeg, image/png">
-    <div>
+    <div class="grid">
       <div v-for="(item, index) in images" :key="index" class="preview">
         <img :src="item.objectURL">
         <button v-show="!uploading" @click="removePreview(index)" class="delete">删除</button>
@@ -57,12 +57,20 @@ function uploadMore() {
 </script>
 
 <style scoped>
+.grid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 8px;
+  align-items: stretch;
+  margin: 1em 0;
+}
+
 .preview {
-  display: inline-block;
-  width: 20%;
   border: 5px solid transparent;
   text-align: center;
-  box-sizing: border-box;
+  border: 2px solid #abb;
+  padding: 4px;
+  background-color: #9aa;
 }
 
 .preview>img {
@@ -80,6 +88,8 @@ function uploadMore() {
   background-color: pink;
   border: 1px solid plum;
   color: purple;
+  display: block;
+  margin: auto;
 }
 
 .delete:hover {
