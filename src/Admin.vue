@@ -3,10 +3,12 @@
     <el-table-draggable @sort="handleRowDragEnd">
       <el-table :data="state.rows" border row-key="id">
         <el-table-column label="ID" prop="id" width="40"></el-table-column>
-        <el-table-column label="图片" width="140">
+        <el-table-column label="图片" width="166">
           <template v-slot="{ row, $index }">
-            <img :src="'http://localhost:40731/' + row.filename" width="100" height="100"
-              @click="dialogState.visible = true, dialogState.index = $index">
+            <el-button>
+              <img :src="'http://localhost:40731/' + row.filename" width="100" height="100"
+                @click="dialogState.visible = true, dialogState.index = $index">
+            </el-button>
           </template>
         </el-table-column>
         <el-table-column label="宽度" prop="width" width="80"></el-table-column>
@@ -16,7 +18,8 @@
             <el-checkbox v-model="row.visible" @change="updateRecord({ id: row.id, visible: row.visible })" label="审核通过"
               border></el-checkbox>
             <el-button type="danger" icon="el-icon-delete" plain @click="removeRecord(row.id)">删除</el-button>
-            <el-button @click="updateRecord({ id: row.id, order_num: state.firstOrderNum /= 2 }), fetchData()">置顶</el-button>
+            <el-button
+              @click="updateRecord({ id: row.id, order_num: state.firstOrderNum /= 2 }), fetchData()">置顶</el-button>
           </template>
         </el-table-column>
       </el-table>
@@ -38,7 +41,7 @@
 </template>
 
 <script setup>
-import { reactive, onMounted, ref } from 'vue'
+import { reactive, onMounted } from 'vue'
 import axios from 'axios'
 import ElTableDraggable from 'el-table-draggable'
 
