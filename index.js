@@ -5,6 +5,7 @@ const path = require('path')
 const fs = require('fs')
 const uuid = require('uuid')
 const cors = require('cors')
+const sharp = require('sharp')
 
 const app = express()
 app.use(cors())
@@ -30,7 +31,9 @@ db.run(`
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     filename TEXT,
     order_num REAL,
-    visible BOOL
+    visible BOOL,
+    width INTEGER,
+    height INTEGER
   );
 `)
 
@@ -41,7 +44,6 @@ app.get('/', (req, res) => {
       console.error(err.message)
       return res.status(500).send('错误！')
     }
-
     res.send(`<!DOCTYPE html>
       <meta charset="utf-8">
       <title>画廊</title>
@@ -57,6 +59,7 @@ app.get('/', (req, res) => {
             <img src="${image.filename}" width="100" height="100">
           </td>
           <td>
+            ${image.width} × ${image.height}
             <form method="get" action="/update">
               <input type="hidden" name="id" value="${image.id}">
               <input type="radio" name="visible" value="true" ${image.visible ? 'checked' : ''}>
@@ -101,15 +104,20 @@ app.get('/list', (req, res) => {
 // 上传接口
 app.post('/upload', upload.single('image'), (req, res) => {
   const { filename } = req.file
-  db.run(`
-    INSERT INTO images (filename, visible, order_num)
-    VALUES (?, FALSE, (SELECT COALESCE(MAX(order_num), 0) + 1 FROM images))
-  `, [filename], (err) => {
-    if (err) {
-      console.error(err.message)
-      return res.status(500).send('错误！')
-    }
-    res.status(204).end()
+  sharp(path.join('uploads', filename)).metadata().then(({width,height}) => {
+    db.run(`
+      INSERT INTO images (filename, visible, order_num, width, height)
+      VALUES (?, FALSE, (SELECT COALESCE(MAX(order_num), 0) + 1 FROM images), ?, ?)
+    `, [filename, width, height], (err) => {
+      if (err) {
+        console.error(err.message)
+        return res.status(500).send('数据库错误！')
+      }
+      res.status(204).end()
+    })
+  }).catch(err => {
+    console.error(err.message)
+    return res.status(500).send('获取图片尺寸失败！')
   })
 })
 

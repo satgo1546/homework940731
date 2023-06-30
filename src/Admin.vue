@@ -9,7 +9,8 @@
               @click="dialogState.visible = true, dialogState.index = $index">
           </template>
         </el-table-column>
-        <el-table-column label="排序顺序" prop="order_num"></el-table-column>
+        <el-table-column label="宽度" prop="width" width="80"></el-table-column>
+        <el-table-column label="高度" prop="height" width="80"></el-table-column>
         <el-table-column label="操作" width="144">
           <template v-slot="{ row }">
             <el-checkbox v-model="row.visible" @change="updateRecord({ id: row.id, visible: row.visible })" label="审核通过"
