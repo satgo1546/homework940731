@@ -1,13 +1,17 @@
 <template>
   <div>
     <div ref="refreshSpinner" class="loading"></div>
+    <div class="spacer"></div>
     <div class="grid" ref="gridContainer">
       <div v-for="(item, i) in images" :key="i" class="card"
         :style="{ gridColumn: item.column + 1, marginTop: item.y + 'px' }" @click="popupIndex = i, popupShown = true">
         <img :src="'http://localhost:40731/' + item.filename">
       </div>
     </div>
-    <div v-show="!exhausted" ref="loadMoreSpinner" class="loading"></div>
+    <div v-show="!exhausted">
+      <div class="spacer"></div>
+      <div class="loading" ref="loadMoreSpinner"></div>
+    </div>
     <p v-show="exhausted">没有更多了。</p>
     <div v-if="images.length" v-show="popupShown" class="popup">
       <img :src="'http://localhost:40731/' + images[popupIndex].filename" @click="popupShown = false">
@@ -86,7 +90,7 @@ onMounted(() => {
       gridContainer.value.scrollIntoView()
       refresh()
     }
-  }, { threshold: 0.3 }).observe(refreshSpinner.value)
+  }, { threshold: 1 }).observe(refreshSpinner.value)
   new IntersectionObserver(([entry]) => {
     intersecting = entry.isIntersecting
   }, { threshold: 0 }).observe(loadMoreSpinner.value)
@@ -114,7 +118,7 @@ onUnmounted(() => {
   grid-auto-columns: 1fr;
   align-items: start;
   min-height: 100vh;
-  margin-top: 48px;
+  margin-top: 32px;
 }
 
 .card {
@@ -196,5 +200,9 @@ onUnmounted(() => {
 
 .next:hover {
   border-left-color: #cccc;
+}
+
+.spacer{
+  height: 24px;
 }
 </style>
