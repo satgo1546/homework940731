@@ -10,6 +10,10 @@ node index.js &
 npm run dev
 ```
 
+然后打开http://localhost:8010/。
+
+最初数据库中没有图片，因此首先需要上传几张图片。
+
 ## 接口服务器
 
 - 框架：Express.js
@@ -29,3 +33,5 @@ npm run dev
 - 框架：Element UI
 
 ## 浏览页面
+
+- 基于CSS grid布局和ResizeObserver监听尺寸变化实现瀑布流
