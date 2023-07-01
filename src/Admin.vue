@@ -26,7 +26,7 @@
     </el-table-draggable>
     <el-pagination layout="prev, pager, next" :total="state.total" :page-size="state.count" :current-page="state.page + 1"
       @current-change="handleCurrentChange" />
-    <el-dialog :title="'图片 ID ' + state.rows[dialogState.index].id" :visible.sync="dialogState.visible" width="95%">
+    <el-dialog v-if="state.rows.length" :title="'图片 ID ' + state.rows[dialogState.index].id" :visible.sync="dialogState.visible" width="95%">
       <img :src="'http://localhost:40731/' + state.rows[dialogState.index].filename" style="max-width: 100%;">
       <span slot="footer" class="dialog-footer">
         <el-tag type="info">{{ dialogState.index + 1 }} / {{ state.rows.length }}</el-tag>
