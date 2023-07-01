@@ -24,6 +24,9 @@ body {
 }
 
 nav {
+  position: sticky;
+  top: 0;
+  z-index: 9;
   display: flex;
   background: #dee;
   border: 1px solid #000;
